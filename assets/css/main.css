@@ -121,12 +121,21 @@ textarea {
   color: var(--brand);
 }
 
+.body {
+    color: var(--lightest);
+}
+
 h3 {
   color: var(--lightanchor);
 }
 
+
 p {
   color: var(--lightest);
+}
+
+a {
+    color: var(--accent);
 }
 
 .light-back {
