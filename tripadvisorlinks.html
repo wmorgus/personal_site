@@ -20,6 +20,8 @@
   </head>
   <body>
     <h2>Thanks for nothing, Tripadvisor</h2>
+    <p>Trying to scrape directly from Tripadvisor's site was <i>not</i> working at all, since they have a <code>target="_blank"</code> attribute on each of their links within the listings which opens the link in a new window. This would normally be fine, but the way that their pages are set up every time I tried to open one of these links it wouldn't properly open and would just advance to the next set of listings.</p>
+    <p>To circumnavigate this, I gave up on trying to scrape directly and instead adapted <a href="https://stackoverflow.com/questions/43454459/get-the-lists-of-things-to-do-from-tripadvisor">this python script</a> to get an ouput of all of the links to the museum pages, then pasted them here and did my scraping from this page.</p>
     <div class="container-fluid main">
         <a href="https://www.tripadvisor.com//Attraction_Review-g60795-d3187840-Reviews-The_Barnes_Foundation-Philadelphia_Pennsylvania.html">link to site</a><br>
         <a href="https://www.tripadvisor.com//Attraction_Review-g60795-d102763-Reviews-Eastern_State_Penitentiary-Philadelphia_Pennsylvania.html">link to site</a><br>
