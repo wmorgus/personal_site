@@ -151,10 +151,16 @@ p {
     text-shadow: 2px 2px #444444;
 }
 
+.customFooter {
+    position: absolute;
+    bottom: 0px;
+    justify-content: space-between;
+}
 
 
-
-
+.tableauPlaceholder {
+    margin: 15px 0px;
+}
 
 
 /* ==========================================================================

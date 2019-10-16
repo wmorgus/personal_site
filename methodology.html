@@ -20,7 +20,24 @@
   </head>
   <body>
     <div class="container-fluid main">
-        <h1>Methods!</h1>
+        <h1>Methodology</h1>
+        <h2>Sources</h2>
+        <p>All data scraped from Tripadvisor <a href="./tripadvisorlinks.html">(painfully)</a>, and Instagram</p>
+        <h2>Tools</h2>
+        <p>To scrape data, I used <a href="webscraper.io">webscraper.io</a> with assistance from a BeautifulSoup Python script.</p>
+        <p>To clean the data, I used a number of Pandas Python scripts and Tableau Prep, as well as <a href="https://geoservices.tamu.edu">Texas A&M's geocoding service</a>. Minor adjustments were made by hand, directly editing the CSV file, whenever it wasn't worth rewriting an entire workflow to catch a small bug.</p>
+        <p>Data visualization was done with Tableau Desktop, and the website was built by me using both vanilla HTML/CSS and Bootstrap.</p>
+        <p>Scripts/sitemaps/cleaned source data:</p>
+        <ul>
+          <li><a href="./assets/oidd/cleaned_geocoded_trip.csv">Cleaned, geocoded Tripadvisor data</a></li>
+          <li><a href="./assets/oidd/cleaned_insta.csv">Cleaned Instagram post data</a></li>
+          <li><a href="./assets/oidd/insta_scores.csv">Instagram scores per museum</a></li>
+          <li><a href="./assets/oidd/tripadv.py">Python script to get <a href="./tripadvisorlinks.html">Tripadvisor links</a></a></li>
+          <li><a href="./assets/oidd/insta_scores.py">Python script for scoring museums based on Instagram posts</a></li>
+          <li><a href="./assets/oidd/geocode.py">An ill-fated, half-baked attempt to write my own geocoding script</a></li>
+          <li><a href="./assets/oidd/tripadv_sitemap.json">Sitemap used to scrape Tripadvisor once links had been collected</a></li>
+          <li><a href="./assets/oidd/sampleinsta_sitemap.json">Sitemap used to scrape Instagram for posts for a hashtag</a> #note: webscraper.io has a limit of ~1000 results per scrape, but I knew I needed a larger dataset than 1000 across all museums to get any meaningful insights that weren't just noise. That being, I choose 15 museums that had at least 1000 posts with their hashtag, and with a sampling of both higher-count and lower-count hashtagged museums ran 15 of these sitemap scrapes, then combined the output files and proceeded.</li>
+        </ul>
     </div>
   </body>
 </html>
