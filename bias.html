@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Data Project 1</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="mask-icon" href="safari-pinned-tab.svg" color="#00ff1c">
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:300|Playfair+Display&display=swap">
+    <link rel="stylesheet" type="text/css" href="./assets/css/dataprojecttwo.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <script src="./assets/js/main.js"></script>
+  </head>
+  <body>
+    <div class="container-fluid main">
+        <h1 style="color: #1DA1F2">Data Project 2: @mediabias, u up?</h1>
+        <h2 style="color: #1DA1F2">About</h2>
+        <p>Given the importance of Twitter in modern political discourse and the ever-polarizing topic of bias in media, I wanted to try to build a model to predict bias within tweets.</p>
+        <h2 style="color: #1DA1F2">Data and Analysis</h2>
+        <p>I collected data from 46 news/opinion Twitter accounts, covering the entire spectrum of political bias. In total, I analyzed 148,000 tweets from these sources.</p>
+        <p>For each tweet, I cleaned, stemmed, and ran sentiment analysis to have consistent inputs for the models I later used to try to predict bias.</p>
+        <p>Once the data was prepared, I wanted to first look at what words were used the most. Comparing frequency of appearance, TF-IDF frequency, and log-scaled frequency, it was obvious that certain words would be appear a lot more than others:</p>
+        <div>
+          <img src="./assets/oidd/frequency.png" style="width:80%"/>
+        </div>
+        <p>I ended up using TF-IDF frequency as my metric for choosing the vocabulary of my classifiers, since the words were more evenly distributed and the words seemed like they would be more predictive:</p>
+        <div >
+          <img src="./assets/oidd/tfidf.png" style="width:80%"/>
+        </div>
+        <p>Once I choose this vocabulary, I one-hot encoded my training and test data with it and wanted to evaluate how a random forest would do at classifying the tweets. On the first run, I got only 33% accuracy, which was mildly disappointing.</p>
+        <p>To improve accuracy, we have three main options:</p>
+        <ul>
+          <li><b>Gather more test data:</b> I didn't exactly want to do this, since my models were already taking long enough to run :)</li>
+          <li><b>Tune hyperparameters:</b> This is a good place to start, seeing how we can adjust the model to work better with our data sounds appealing.</li>
+          <li><b>Feature selection:</b> Spoiler alert, we'll come back to this!</li>
+        </ul> 
+        <p>I first decided to try tuning hyperparameters, namely, I wanted to look at how changing the number of trees and the maximum depth for them impacted accuracy on my training and test data. I first looked at the number of trees:</p>
+        <div>
+          <img src="./assets/oidd/trees.png" style="width:80%"/>
+        </div>
+        <p>As is clearly visible, both training and test accuracy stayed pretty consistent past 100 trees. Max depth, on the other hand was a much more useful parameter to adjust:</p>
+        <div>
+          <img src="./assets/oidd/depth.png" style="width:80%"/>
+        </div>
+        <p>Seeing that training accuracy increased linearly past depth 100 but training accuracy decreased, I knew that this was the reasonable limit of depth for my RF trees. However, at this point the accuracy was still lacking what one would reasonably hope for, so I decided to start trying to look into feature selection.</p>
+        <p>By limiting the vocabulary of my classifiers, I knew that I could ensure that they were focused on learning real features of the data, and not just "memorizing mistakes". The first way I decided to go about this was by finding the words that the left-biased sources and right-biased sources use most differently, as measured by sentiment. This metric would also ideally filter out news-type words like 'reporting' or 'live' that would have no real indication of bias but were included because of a high frequency.</p>
+        <div style="align-items: space-around;">
+          <img src="./assets/oidd/left_sent.png" style="width:48%"/>
+          <img src="./assets/oidd/right_sent.png" style="width:48%"/>
+        </div>
+        <p>Running another RF with optimized parameters on this, accuracy stayed almost identical. This meant, in essence, that I was wrong to think that this feature alone would help my classifier learn less mistakes.</p>
+        <p>I decided to next take a more stastical approach to determining importance, using singular value decomposition-based principal component analysis to determine which features were most important. At first glance, the PCA didn't seem to be very promising:</p>
+        <div>
+          <img src="./assets/oidd/overall_var.png" style="width:80%"/>
+        </div>
+        <p>Seeing as the most important component only accounted for a fraction of a percent of variance. However, by using the first 500 most important components, we could directly account for up to 60%.</p>
+        <div>
+          <img src="./assets/oidd/var_500.png" style="width:80%"/>
+        </div>
+        <p>Running the random forest on the PCA-encoded dataset yielded 43% accuracy, with less variance in the output scores. This was a good sign that we were moving in the right direciton for improving the accuracy of our classifiers.</p>
+        <p>Now that I've got a better set of features to use, I wanted to benchmark my performance on more than just random forests, that is, are there other models that would do a better job of predicting? Here's a summary of which models I tried, and how they did:</p>
+        <h3>K-nearest neighbors:</h3>
+        <p>Running a k-nearest neighbors algorithm, having optimized to k=3, on the PCA-encoded dataset, I got 43% accuracy. However, I had to run this on only a percentage of the dataset since running it with too many gave me a "too many ties" error. While the accuracy was slightly better, the unreliability of the model made it less appealing.</p>
+        <h3>Support vector machine:</h3>
+        <p>Using a support vector machine with a linear kernel, I was able to get my best performance with a SVM, about 31% accuracy, which means this was on average the worst performing model. I tried a lot of different configurations for this model, but none of them seemed to do well with the problem.</p>
+        <h3>Neural networks:</h3>
+        <p>I just learned about neural networks in another class, CIS 545, so I was excited to see what I was able to do with them in application to my project. I used Tensorflow with Keras to build multiple different sequential models, testing different levels of dropout, types of regularization, numbers of nodes, optimizers, and activation functions. I consistently used categorical crossentropy for my loss function, as I was looking to categorize things this was the most appropriate loss function. While my total loss decreased as it should consistently, accuracy always plateaued at around 48%. This wasn't great, but was by far my best model, so I knew this was the one I would use to test out the inference capabilities of my project.</p>
+        <div>
+          <img src="./assets/oidd/nn.png" style="width:80%"/>
+        </div>
+        <h2 style="color: #1DA1F2">Inference</h2>
+        <p>Now that I had built and tested models extensively on my test and training data, I was curious to see how they would do on entirely new data. That is, I choose a few new Twitter accounts to see how my models would classify them. I scraped and cleaned the data for them, then used the PCA results to encode them and ran them through my best-perorming neural net. The results were intersting:</p>
+        <div>
+          <img src="./assets/oidd/inf.png" style="width:80%"/>
+        </div>
+        <p>While they weren't accurately labeled numerically, for the more liberal sources we saw consistently lower numbers than the more conservative ones, which is definitely good! For fun, I included a few other accounts to see how they would be classified, and it turns out Shakira might not be telling us something...</p>
+        <h2>Sources</h2>
+        <p>All data scraped from Twitter, via the rtweet package.</p>
+        <h2>Tools</h2>
+        <p><a href="./assets/oidd/bias.rmd">Here</a> is a link to the R notebook I used to do my analysis. The data I collected and exported:</p>
+        <ul>
+          <li><a href="./assets/oidd/very_left.csv">Very left tweets</a></li>
+          <li><a href="./assets/oidd/leans_left.csv">Leans left tweets</a></li>
+          <li><a href="./assets/oidd/central.csv">Central tweets</a></li>
+          <li><a href="./assets/oidd/leans_right.csv">Leans right tweets</a></li>
+          <li><a href="./assets/oidd/very_right.csv">Very right tweets</a></li>
+        </ul>
+    </div>
+  </body>
+</html>
